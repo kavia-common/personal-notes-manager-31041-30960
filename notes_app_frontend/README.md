@@ -1,82 +1,80 @@
-# Lightweight React Template for KAVIA
+# Notes App Frontend (React + Supabase)
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+A modern, lightweight notes application UI using the Ocean Professional theme with Supabase-backed CRUD.
 
 ## Features
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+- Ocean Professional theme (clean, subtle shadows, blue/amber accents)
+- Sidebar for notes list, top bar for actions, main editor area
+- CRUD via Supabase: list, create, update (debounced auto-save), delete
+- Minimal inline status indicators (saving, saved time, error badge)
+- Graceful handling when env vars are missing (renders setup notice)
 
-## Getting Started
+## Quick Start
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-### `npm test`
-
-Launches the test runner in interactive watch mode.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-## Customization
-
-### Colors
-
-The main brand colors are defined as CSS variables in `src/App.css`:
-
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
+1) Install dependencies
+```
+npm install
 ```
 
-### Components
+2) Create a Supabase project and a `notes` table with columns:
+- id: uuid (default: uuid_generate_v4()) or bigint with identity
+- title: text
+- content: text
+- created_at: timestamp with time zone (default now())
+- updated_at: timestamp with time zone (default now())
 
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
+3) Add an `.env` file in the project root with:
+```
+REACT_APP_SUPABASE_URL=your-project-url
+REACT_APP_SUPABASE_KEY=your-anon-public-key
+```
 
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+4) Start the dev server
+```
+npm start
+```
 
-## Learn More
+If env vars are missing, the app will render a setup notice instead of crashing.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Scripts
 
-### Code Splitting
+- `npm start` - start development server
+- `npm test` - run tests
+- `npm run build` - production build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Files Overview
 
-### Analyzing the Bundle Size
+- `src/supabaseClient.js` - initializes Supabase using env vars
+- `src/services/notesService.js` - CRUD methods: listNotes, createNote, updateNote, deleteNote
+- `src/hooks/useNotes.js` - state management, selection, debounced auto-save, optional realtime
+- `src/components/Sidebar.js` - notes list with create button
+- `src/components/TopBar.js` - actions and status indicators
+- `src/components/NoteEditor.js` - editor for title/content
+- `src/components/EmptyState.js` - welcome/empty state
+- `src/index.css` & `src/App.css` - theme and layout styles (Ocean Professional)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Supabase Realtime (Optional)
 
-### Making a Progressive Web App
+The app subscribes to realtime changes for the `notes` table if available. Ensure Realtime is enabled for the table in Supabase to see updates reflected automatically.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Environment Variables
 
-### Advanced Configuration
+The app requires:
+- `REACT_APP_SUPABASE_URL`
+- `REACT_APP_SUPABASE_KEY`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+These must be supplied via `.env` and the development server must be restarted after changes.
 
-### Deployment
+## Design
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Theme name: Ocean Professional
+- Colors:
+  - Primary: #2563EB
+  - Secondary/Success: #F59E0B
+  - Error: #EF4444
+  - Background: #f9fafb
+  - Surface: #ffffff
+  - Text: #111827
+- Layout: Sidebar (notes), TopBar (actions), Main (editor)
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

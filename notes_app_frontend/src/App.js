@@ -1,47 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React from 'react';
+import './index.css';
 import './App.css';
+import { supabase, hasSupabaseEnv } from './supabaseClient';
+import TopBar from './components/TopBar';
+import Sidebar from './components/Sidebar';
+import NoteEditor from './components/NoteEditor';
+import EmptyState from './components/EmptyState';
+import useNotes from './hooks/useNotes';
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
+  /**
+   * Main application entry for the Notes app.
+   * Renders the TopBar, Sidebar, and NoteEditor using the Ocean Professional theme.
+   * Gracefully handles missing Supabase env by rendering a setup notice instead of crashing.
+   */
+  const {
+    notes,
+    selectedId,
+    setSelectedId,
+    createNew,
+    removeNote,
+    updateCurrent,
+    currentNote,
+    loading,
+    error,
+    saving,
+    lastSavedAt
+  } = useNotes();
 
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  if (!hasSupabaseEnv) {
+    return (
+      <div className="app-container" role="alert" aria-live="polite" style={{ display: 'grid', placeItems: 'center', padding: 24 }}>
+        <div style={{ background: 'white', border: '1px solid var(--color-border)', borderRadius: 12, boxShadow: 'var(--shadow-md)', padding: 24, maxWidth: 640 }}>
+          <h1 style={{ marginTop: 0 }}>Setup required</h1>
+          <p style={{ color: 'var(--color-text-muted)' }}>
+            Missing REACT_APP_SUPABASE_URL and/or REACT_APP_SUPABASE_KEY.
+            Please add them to your .env file as documented in the README, then restart the dev server.
+          </p>
+          <div className="status-badge" style={{ marginTop: 8 }}>
+            <span>Env</span>
+            <strong>{String(hasSupabaseEnv)}</strong>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-container">
+      <TopBar
+        onCreate={createNew}
+        onDelete={currentNote ? () => removeNote(currentNote.id) : undefined}
+        saving={saving}
+        lastSavedAt={lastSavedAt}
+        error={error}
+      />
+      <Sidebar
+        notes={notes}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        onCreate={createNew}
+        loading={loading}
+      />
+      <main className="main" style={{ padding: 16 }}>
+        {currentNote ? (
+          <NoteEditor
+            note={currentNote}
+            onChange={updateCurrent}
+          />
+        ) : (
+          <EmptyState onCreate={createNew} />
+        )}
+      </main>
     </div>
   );
 }
